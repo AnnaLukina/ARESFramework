@@ -32,7 +32,7 @@ class Model:
     def move(self, ddxi, horizon):
         # proceed to the next state given current time, position, and control input (acceleration)
         self.ddX = ddxi
-        for ph in range (0, horizon):
+        for ph in range (1, horizon):
             self.dX = self.dX + self.ddX
             self.X = self.X + self.dX
             self.time = self.time + self.ts
