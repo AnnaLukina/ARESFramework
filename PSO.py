@@ -35,47 +35,48 @@ class PSO:
         self.K_max = max(10, self.Num * self.dim * 10)
 
     # generates a swarm of n uniformly distributed particles between lb and ub
-    def spawn(self, lb, ub, k, n):
-        particle = np.random.uniform(lb,ub,[1,self.dim])
-        if k > n:
+    def spawn(self, lb, ub, k):
+        # an array of particles for each bird
+        # size of the swarm is the number of such arrays
+        particle = np.subtract(ub,lb) * np.random.random_sample((self.Num,self.dim)) + lb
+        if k > self.SwarmSize:
             return particle
         else:
             k = k + 1
-            return np.append(particle, PSO.spawn(self,lb,ub,k,n), axis=0)
+            return np.append(particle, PSO.spawn(self,lb,ub,k), axis=0)
 
     # updates each particle p's position x and velocity v in the swarm
     # (improved PSO)
     def update(self, lb, ub, x, v):
-        for p in range (1, self.SwarmSize):
-            for d in range(1,self.dim):
-                f1 = (1 - (self.K_i - self.K_max) / self.K_max)
-                f2 = (self.K_i - self.K_min) / self.K_max
-                v[p,d] = self.w_max * v[p,d] + f1 * np.random.uniform(0,1,1) * (self.pbest[p,d] - x[p,d]) + f2 * np.random.uniform(0,1,1) * (self.gbest[d] - x[p,d])
-                x[p,d] = min(lb[d], max(ub[d], x[p,d] + v[p,d]))
+        for p in range (0, self.SwarmSize - 1):
+            f1 = (1 - (self.K_i - self.K_max) / self.K_max) * np.random.uniform(0,1,1)
+            f2 = (self.K_i - self.K_min) / self.K_max * np.random.uniform(0,1,1)
+            v[p * self.Num : (p+1) * self.Num, 0 : self.dim] = self.w_max * v[p * self.Num : (p+1) * self.Num, 0 : self.dim] + f1 * (self.pbest[p * self.Num : (p+1) * self.Num, 0 : self.dim] - x[p * self.Num : (p+1) * self.Num, 0 : self.dim]) + f2 * (self.gbest - x[p * self.Num : (p+1) * self.Num, 0 : self.dim])
+            x[p * self.Num : (p+1) * self.Num, 0 : self.dim] = x[p * self.Num : (p+1) * self.Num, 0 : self.dim] + v[p * self.Num : (p+1) * self.Num, 0 : self.dim]
         return x
 
     def step(self, model, horizon, lb, ub):
         # spawn positions and velocities for each particle in the swarm
         # each particle corresponds to the whole team of agents
-        x = PSO.spawn(self,lb,ub,0, self.Num * self.SwarmSize)
+        x = PSO.spawn(self,lb,ub,0)
         print("x:", x)
-        v = PSO.spawn (self, lb-ub, ub-lb, 0, self.Num * self.SwarmSize)
+        v = PSO.spawn (self, np.subtract(lb,ub), np.subtract(ub,lb), 0)
         print ("v:", v)
         self.pbest = x
         fit = model.J
         # compute fitness of each particle
-        for p in range(1, self.SwarmSize - 1):
+        for j in range(1, self.SwarmSize - 1):
             # proceed to the next state of the model using generated candidate action
-            Model.move (model, x[p * self.Num : (p+1) * self.Num, 0 : self.dim], horizon)
+            Model.move (model, x[j * self.Num : (j+1) * self.Num, 0 : self.dim], horizon)
             # compute fitness in this state
             fit = np.append(fit, model.J)
-        print(fit)
+        print("fit:",fit)
 
         # main loop of PSO iterating for maximum number of iterations K_max
         self.K_i = self.K_min
         while self.K_i <= self.K_max:
             # find the global best fitness value and solution
-            for k in range(1, self.SwarmSize):
+            for k in range(1, self.SwarmSize - 1):
                 if fit[k] < self.best_fit:
                     self.best_fit = fit[k]
                     self.gbest = x[k * self.Num : (k+1) * self.Num, 0 : self.dim]
@@ -86,9 +87,10 @@ class PSO:
             for p in range(1, self.SwarmSize - 1):
                 Model.move (model, x[p * self.Num: (p + 1) * self.Num, 0: self.dim], horizon)
                 new_fit = np.append(new_fit, model.J)
-                if new_fit[p + 1] < fit[p + 1]:
-                    fit[p + 1] = new_fit[p + 1]
-            print(fit)
+            for p in range(0, self.SwarmSize-1):
+                if new_fit[p] < fit[p]:
+                    fit[p] = new_fit[p]
+            print("update:", fit)
             self.K_i = self.K_i + 1
 
 
