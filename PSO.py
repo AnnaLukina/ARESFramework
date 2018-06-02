@@ -53,6 +53,14 @@ class PSO:
             f2 = (self.K_i - self.K_min) / self.K_max * np.random.uniform(0,1,1)
             v[p * self.Num : (p+1) * self.Num, 0 : self.dim] = self.w_max * v[p * self.Num : (p+1) * self.Num, 0 : self.dim] + f1 * (self.pbest[p * self.Num : (p+1) * self.Num, 0 : self.dim] - x[p * self.Num : (p+1) * self.Num, 0 : self.dim]) + f2 * (self.gbest - x[p * self.Num : (p+1) * self.Num, 0 : self.dim])
             x[p * self.Num : (p+1) * self.Num, 0 : self.dim] = x[p * self.Num : (p+1) * self.Num, 0 : self.dim] + v[p * self.Num : (p+1) * self.Num, 0 : self.dim]
+        # check constraints on control variables
+        for p in range(0, self.SwarmSize - 1):
+            for i in range(0,self.Num-1):
+                for j in range(0,self.dim-1):
+                    if x[p + i,j] < lb[i,j]:
+                        x[p + i,j] = lb[i,j]
+                    if x[p + i,j] > ub[i,j]:
+                        x[p + i,j] = ub[i,j]
         return x
 
     def step(self, model, horizon, lb, ub):

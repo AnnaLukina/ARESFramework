@@ -37,4 +37,3 @@ class Model:
             self.X = self.X + self.dX
             self.time = self.time + self.ts
         self.J = Objective.score(self.obj,self.X)
-        print("self", self.J)
