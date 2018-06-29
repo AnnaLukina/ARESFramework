@@ -36,6 +36,9 @@ from Optimizer import*
 #from scipy import linalg as la
 
 horizon = 1
+level = M.J
+# initialize optimizer
+opt = Optimizer(dim,Num,swarm,M,time_bound)
 # define lower and upper bounds on the actions based on the velocities of agents
 lb = -10*np.ones([1,dim])#-np.la.norm(dx0[0])
 ub = 10*np.ones([1,dim])#np.la.norm(dx0[0])
@@ -44,4 +47,6 @@ for j in range(1, Num):
     ub = np.append(ub, 10*np.ones([1,dim]), axis=0)
 print(lb,"\n",ub)
 # run optimizer for current configuration and constraints
-Optimizer(dim,Num,swarm,M,horizon,lb,ub)
+Optimizer.centralized(opt,horizon, lb, ub)
+if opt.new_level > 0:
+    M.move(M,opt.control,opt.ph)

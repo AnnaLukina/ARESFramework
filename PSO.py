@@ -12,7 +12,8 @@ from Model import*
 class PSO:
     gbest = 0 # global best solution
     pbest = 0 # personal best solution
-    best_fit = float("inf") # best fitness value so far
+    gbest_fit = float("inf") # best global fitness value so far
+    pbest_fit = 0 # best personal fitness value so far
     error = 0 # residual distance to the global optimum
     SwarmSize = 10
     MinNeighFrac = 0.25 # minimum fraction of
@@ -23,6 +24,7 @@ class PSO:
     c2 = 2 # social coefficient
     w_max = 1.0 # max inertia weight value
     w_min = 0.1 # min inertia weight value
+    w = w_min # inertia
     K_i = 1 # total number of iterations
     K_min = 1 # first iteration
     K_max = 10 # last iteration
@@ -51,7 +53,7 @@ class PSO:
         for p in range (0, self.SwarmSize - 1):
             f1 = (1 - (self.K_i - self.K_max) / self.K_max) * np.random.uniform(0,1,1)
             f2 = (self.K_i - self.K_min) / self.K_max * np.random.uniform(0,1,1)
-            v[p * self.Num : (p+1) * self.Num, 0 : self.dim] = self.w_max * v[p * self.Num : (p+1) * self.Num, 0 : self.dim] + f1 * (self.pbest[p * self.Num : (p+1) * self.Num, 0 : self.dim] - x[p * self.Num : (p+1) * self.Num, 0 : self.dim]) + f2 * (self.gbest - x[p * self.Num : (p+1) * self.Num, 0 : self.dim])
+            v[p * self.Num : (p+1) * self.Num, 0 : self.dim] = self.w * v[p * self.Num : (p+1) * self.Num, 0 : self.dim] + f1 * (self.pbest[p * self.Num : (p+1) * self.Num, 0 : self.dim] - x[p * self.Num : (p+1) * self.Num, 0 : self.dim]) + f2 * (self.gbest - x[p * self.Num : (p+1) * self.Num, 0 : self.dim])
             x[p * self.Num : (p+1) * self.Num, 0 : self.dim] = x[p * self.Num : (p+1) * self.Num, 0 : self.dim] + v[p * self.Num : (p+1) * self.Num, 0 : self.dim]
         # check constraints on control variables
         for p in range(0, self.SwarmSize - 1):
@@ -64,6 +66,7 @@ class PSO:
         return x
 
     def step(self, model, horizon, lb, ub):
+        w_count = 0
         # spawn positions and velocities for each particle in the swarm
         # each particle corresponds to the whole team of agents
         x = PSO.spawn(self,lb,ub,0)
@@ -78,16 +81,18 @@ class PSO:
             Model.move (model, x[j * self.Num : (j+1) * self.Num, 0 : self.dim], horizon)
             # compute fitness in this state
             fit = np.append(fit, model.J)
+        self.pbest_fit = fit # initilize best personal fitness
         print("fit:",fit)
 
         # main loop of PSO iterating for maximum number of iterations K_max
         self.K_i = self.K_min
         while self.K_i <= self.K_max:
             # find the global best fitness value and solution
-            for k in range(1, self.SwarmSize - 1):
-                if fit[k] < self.best_fit:
-                    self.best_fit = fit[k]
+            for k in range(0, self.SwarmSize - 1):
+                if fit[k] < self.gbest_fit:
+                    self.gbest_fit = fit[k]
                     self.gbest = x[k * self.Num : (k+1) * self.Num, 0 : self.dim]
+
             # update particle velocities and positions
             x = PSO.update (self, lb, ub, x, v)
             # compute new fitness after update and compare with the previous one
@@ -95,11 +100,28 @@ class PSO:
             for p in range(1, self.SwarmSize - 1):
                 Model.move (model, x[p * self.Num: (p + 1) * self.Num, 0: self.dim], horizon)
                 new_fit = np.append(new_fit, model.J)
+
             for p in range(0, self.SwarmSize-1):
-                if new_fit[p] < fit[p]:
-                    fit[p] = new_fit[p]
-            print("update:", fit)
+                if new_fit[p] < self.pbest_fit[p]:
+                    self.pbest_fit[p] = new_fit[p]
+                    self.pbest[p] = x[p]
+                if new_fit[p] < self.gbest_fit:
+                    self.gbest_fit = new_fit[p]
+                    self.gbest = x[p]
+                    w_count = max(0, w_count - 1)
+                else:
+                    w_count = w_count + 1
+            print("update:", self.gbest_fit)
             self.K_i = self.K_i + 1
+
+            # update inertia
+            if (w_count < 2):
+                self.w = max(self.w_min, min(self.w_max, 2.0 * self.w))
+            else:
+                if (w_count > 5):
+                    self.w = max(self.w_min, min(self.w_max, 0.5 * self.w))
+
+
 
 
 
