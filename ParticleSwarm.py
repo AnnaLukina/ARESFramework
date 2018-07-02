@@ -69,22 +69,27 @@ class ParticleSwarm:
         w_count = 0
         # spawn positions and velocities for each particle in the swarm
         # each particle corresponds to the whole team of agents
-        x = ParticleSwarm.spawn(self,lb,ub,0)
+        x = ParticleSwarm.spawn (self,lb,ub,0)
         v = ParticleSwarm.spawn (self, np.subtract(lb,ub), np.subtract(ub,lb), 0)
         self.pbest = x
         fit = model.J
+        models = DynModel(model.obj, model.X, model.dX, model.ddX, model.Num)
         # compute fitness of each particle
         for j in range(1, self.SwarmSize - 1):
+            # clone the model
+            model_clone = DynModel(model.obj, model.X, model.dX, model.ddX, model.Num)
             # proceed to the next state of the model using generated candidate action
-            DynModel.move (model, x[j*self.Num:(j+1)*self.Num,0:self.dim], horizon)
+            DynModel.move (model_clone, x[j*self.Num:(j+1)*self.Num,0:self.dim], horizon)
             # compute fitness in this state
-            fit = np.append(fit, model.J)
+            fit = np.append(fit, model_clone.J)
+            models = np.append(models, model_clone)
+
         self.pbest_fit = fit # initialize best personal fitness
         print("fit:",fit)
 
         # main loop of PSO iterating for maximum number of iterations K_max
         self.K_i = self.K_min
-        while self.K_i <= self.K_max:
+        while self.K_i <= self.K_max and self.gbest_fit > Objective.phi:
             # find the global best fitness value and solution
             for k in range(0, self.SwarmSize - 1):
                 if fit[k] < self.gbest_fit:
@@ -94,10 +99,10 @@ class ParticleSwarm:
             # update particle velocities and positions
             x = ParticleSwarm.update (self, lb, ub, x, v)
             # compute new fitness after update and compare with the previous one
-            new_fit = model.J
+            new_fit = self.gbest_fit
             for p in range(1, self.SwarmSize - 1):
-                DynModel.move (model, x[p * self.Num: (p + 1) * self.Num, 0: self.dim], horizon)
-                new_fit = np.append(new_fit, model.J)
+                DynModel.move (models[p], x[p * self.Num: (p + 1) * self.Num, 0: self.dim], horizon)
+                new_fit = np.append(new_fit, models[p].J)
 
             for p in range(0, self.SwarmSize-1):
                 if new_fit[p] < self.pbest_fit[p]:
