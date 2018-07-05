@@ -9,10 +9,11 @@ class Objective:
     phi = 0
     T = 10
 
-    def __init__(self, spec, time_bound, func):
+    def __init__(self, spec, time_bound, func, target):
         self.phi = spec
         self.T = time_bound
         self.func = func
+        self.target = target
 
     def score(self, x):
         #mlab = Matlab (matlab='C:\Program Files\MATLAB\R2017a\bin\matlab')
@@ -23,14 +24,13 @@ class Objective:
         if self.func == 'Michalewicz':
             fit = 0
             for i in (0,x.shape[0]-1):
-                fit = fit + np.sum(-np.sin(x[i,:])*(np.sin((i+1)*x[i,:]**2/np.pi))**20)
-            fit = np.fabs(-0.99999981-fit)
+                fit = fit + np.sum(-np.sin(x[i])*(np.sin((i+1)*x[i]**2/np.pi))**20)
 
         # altitude function for drone coverage task
         if self.func == 'Coverage':
             fit = 0
             for i in (0, x.shape[0] - 1):
-                fit = fit + max (0, 200 - x[(i, 2)])
+                fit = fit + max (0, 200 - x[i,2])
 
-        return fit
+        return np.fabs(self.target - fit)
 
