@@ -1,10 +1,11 @@
 from turtledemo.chaos import plot
 
 import numpy as np
-import math
+import time
 
+start = time.time()
 
-dim = 9 # problem dimension
+dim = 10 # problem dimension
 Num = 1 # number of agents
 # implemented problems to choose from
 problems = np.array(['Coverage',
@@ -15,7 +16,7 @@ problems = np.array(['Coverage',
 
 from Objective import*
 
-spec = 0.1 # each agent is born with the same global mission
+spec = 10**(-1) # each agent is born with the same global mission
 time_bound = 200 # global time constraints
 target = -0.99864*dim + 0.30271 # desired global optimum
 func = problems[1] # problem choice
@@ -46,7 +47,7 @@ print(M.J)
 from Optimizer import*
 from scipy import linalg as la
 
-horizon = 3
+horizon = 10
 levels = M.J
 level = M.J
 # initialize optimizer
@@ -72,7 +73,12 @@ while M.time < obj.T and level > obj.phi:
 #import matplotlib.pyplot as plt
 
 #plt.plot(levels)
+
+end = time.time()
+print("time: ",end - start)
 print("all levels:",levels)
 print("solution: ", opt.control)
 if level <= obj.phi:
     print("success")
+
+
