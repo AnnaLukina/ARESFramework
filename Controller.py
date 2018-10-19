@@ -5,7 +5,7 @@ import time
 
 start = time.time()
 
-dim = 10 # problem dimension
+dim = 8 # problem dimension
 Num = 1 # number of agents
 # implemented problems to choose from
 problems = np.array(['Coverage',
@@ -47,7 +47,7 @@ print(M.J)
 from Optimizer import*
 from scipy import linalg as la
 
-horizon = 10
+horizon = 5
 levels = M.J
 level = M.J
 # initialize optimizer
