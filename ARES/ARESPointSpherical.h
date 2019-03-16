@@ -8,6 +8,8 @@ public:
 	double angle_;
 
 	ARESPointSpherical(double magnitude, double angle);
+
+	static ARESPointSpherical createRandomPoint(double lower_bound, double upper_bound);
 };
 
 #endif // !ARES_ACCELERATION

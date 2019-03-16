@@ -13,6 +13,8 @@ public:
 	ARESPointCartesian(double x, double y);
 	ARESPointCartesian& operator=(ARESPointSpherical &p);
 	double norm() const;
+
+	static ARESPointCartesian createRandomPoint(double lower_bound, double upper_bound);
 };
 
 #endif // !ARES_POINT_H

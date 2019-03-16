@@ -20,6 +20,16 @@ public:
 		return -1;
 	}
 	
+	static bool isWithinBounds(double value, double lower_bound, double upper_bound)
+	{
+		return (value >= lower_bound && value <= upper_bound);
+	}
+
+	static bool isOutOfBounds(double value, double lower_bound, double upper_bound)
+	{
+		return (isWithinBounds(value, lower_bound, upper_bound) == false);
+	}
+
 };
 
 #endif // !ARES_LIBRARY

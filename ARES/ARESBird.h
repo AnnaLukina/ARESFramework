@@ -10,13 +10,18 @@ class ARESBird
 public:
 
 	ARESPointCartesian position_, velocity_, acceleration_;
-	double lower_bound_, upper_bound_;
+	double current_lower_bound_, current_upper_bound_;
 
-	ARESBird(ARESParameters &parameters, ARESPointCartesian &position, ARESPointCartesian &velocity, ARESPointCartesian &acceleration);
+	ARESBird(const ARESParameters &parameters, const ARESPointCartesian &position, const ARESPointCartesian &velocity, const ARESPointCartesian &acceleration);
 	
 	//note that acceleration might change due to trimming :o
 	//problematic - this function move AND sets acceleration - check if this can be decomposed
-	void move(ARESParameters &parameters, ARESPointSpherical &input_spherical_acceleration);
+	void move(const ARESParameters &parameters, ARESPointSpherical &input_spherical_acceleration);
+
+	ARESPointSpherical createNewAcceleration() const;
+
+	static ARESBird createRandomBird(const ARESParameters &parameters);
+
 };
 
 
