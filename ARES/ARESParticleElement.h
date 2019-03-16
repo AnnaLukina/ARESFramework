@@ -27,7 +27,7 @@ public:
 		evolveGrowth(parameters, reference_element);		
 		updateAcceleration(growth_.magnitude_, growth_.angle_);
 		nullifyGrowthConditional(bird.current_lower_bound_, bird.current_upper_bound_);
-		clampValues(bird.current_lower_bound_, bird.current_upper_bound_);
+		clampAcceleration(bird.current_lower_bound_, bird.current_upper_bound_);
 	}
 
 private:
@@ -85,7 +85,7 @@ private:
 		}	
 	}
 
-	void clampValues(double lower_bound, double upper_bound)
+	void clampAcceleration(double lower_bound, double upper_bound)
 	{
 		//clamp values if they are too large
 		acceleration_.magnitude_ = std::min(acceleration_.magnitude_, upper_bound);
