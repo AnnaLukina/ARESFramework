@@ -11,7 +11,7 @@ public:
 	double x_, y_;
 
 	ARESPointCartesian(double x, double y);
-	ARESPointCartesian& operator=(ARESPointSpherical &p);
+	ARESPointCartesian& operator=(const ARESPointSpherical &p);
 	double norm() const;
 
 	static ARESPointCartesian createRandomPoint(double lower_bound, double upper_bound);

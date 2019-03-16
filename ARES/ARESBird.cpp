@@ -1,5 +1,14 @@
 #include "ARESBird.h"
 
+ARESBird::ARESBird():
+	position_(0, 0),
+	velocity_(0, 0),
+	acceleration_(0, 0),
+	current_lower_bound_(0),
+	current_upper_bound_(0)
+{
+}
+
 ARESBird::ARESBird(const ARESParameters &parameters, const ARESPointCartesian &position, const ARESPointCartesian &velocity, const ARESPointCartesian &acceleration) :
 	position_(position),
 	velocity_(velocity),
@@ -10,18 +19,8 @@ ARESBird::ARESBird(const ARESParameters &parameters, const ARESPointCartesian &p
 
 //note that acceleration might change due to trimming :o
 //problematic - this function move AND sets acceleration - check if this can be decomposed
-void ARESBird::move(const ARESParameters &parameters, ARESPointSpherical &input_spherical_acceleration)
+void ARESBird::move(const ARESParameters &parameters, const ARESPointSpherical &input_spherical_acceleration)
 {
-	//TODO - what? Is this correct? I think this is a bug -> should be acceleration not velocity that becomes too big
-
-	//trim - reduce the acceleration if it is too big
-	//cannot increase the velocity abruptly - todo this is a big strange though, the way its computed, especially if there's a delta_t
-	double velocity_norm = velocity_.norm();
-	if (input_spherical_acceleration.magnitude_ >= velocity_norm)
-	{
-		input_spherical_acceleration.magnitude_ = velocity_norm;
-	}
-
 	acceleration_ = input_spherical_acceleration;
 
 	//#update velocities
@@ -31,14 +30,6 @@ void ARESBird::move(const ARESParameters &parameters, ARESPointSpherical &input_
 	//update positions
 	position_.x_ += (velocity_.x_ * parameters.delta_t);
 	position_.y_ += (velocity_.y_ * parameters.delta_t);
-}
-
-ARESPointSpherical ARESBird::createNewAcceleration() const
-{
-	double magnitude = ARESLibrary::random_uniform(current_lower_bound_, current_upper_bound_);
-	double angle = ARESLibrary::random_uniform(current_lower_bound_, current_upper_bound_);
-
-	return ARESPointSpherical(magnitude, angle);
 }
 
 ARESBird ARESBird::createRandomBird(const ARESParameters &parameters)
