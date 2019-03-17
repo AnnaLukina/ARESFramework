@@ -60,7 +60,7 @@ double ARESParticleElement::computeGrowthComponentEvolution(const ARESParameters
 	//# f2 = (self.K_i - self.K_min) / self.K_max * np.random.uniform(0, 1, 1)
 	//# todo update the comment above - what is this lel
 
-	double a = parameters.inertia * growth_component;
+	double a = parameters.current_inertia * growth_component;
 	double b = parameters.cognitive_coefficient * (personal_best_component - current_component);
 	b *= ARESLibrary::random_uniform(0, 1);
 	double c = parameters.social_coefficient * (reference_best_component - current_component);

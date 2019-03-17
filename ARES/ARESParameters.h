@@ -19,7 +19,7 @@ public:
 	double social_coefficient;
 	double inertia_max;
 	double inertia_min;
-	double inertia;
+	double current_inertia;
 	int number_of_swarm_steps;
 	int number_of_particles;
 
@@ -39,7 +39,7 @@ public:
 		social_coefficient = 0.5;
 		inertia_max = 1.0;
 		inertia_min = 0.1;
-		inertia = inertia_min;
+		current_inertia = inertia_min;
 		number_of_swarm_steps = 1000;
 		number_of_particles = 1000;
 	}

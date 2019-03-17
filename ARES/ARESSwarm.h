@@ -3,14 +3,34 @@
 
 #include "ARESParameters.h"
 #include "ARESFlock.h"
+#include "ARESParticle.h"
+#include "ARESEvaluator.h"
 
-class Swarm 
+class Swarm		
 {
 public:
 
-	ARESParticles * particles_;
+	int counter_inertia_;
+
+	int num_particles_active_;
+	int num_particles_allocated_;
+
+	ARESParticle * particles_;
+
+	double *objective_particles_current_;	
+	ARESParticle * particles_best_personal_;
+	double * objective_best_personal_;
+
+	ARESParticle particle_best_global_;
+	double objective_best_global_;
 	
-	Swarm(const ARESParameters &parameters);
+	ARESEvaluator evaluator_;
+
+	Swarm(const ARESParameters &parameters, const ARESFlock &flock);
+
+	void evolveParticles(ARESParameters &parameters, const ARESFlock &flock);
+	void updateLocalInformation(const ARESParameters &parameters, const ARESFlock &flock, int index_particle);
+	void updateGlobalInformation(ARESParameters &parameters, const ARESFlock &flock, const ARESParticle &candidate_particle);
 
 	void randomiseParticles(ARESFlock &flock);
 
@@ -28,29 +48,14 @@ public:
 		*/
 	}
 	
-	~Swarm()
-	{
-		delete[] particles_;
-	}
+	~Swarm();
 
 };
 
 /*
 class Swarm :
-	def __init__(self, parameters, flock) :
-	self.particles = [Particle(parameters = parameters, flock = flock) for i in range(parameters.number_of_particles)]
-
-	p = min(self.particles, key = lambda p : computeObjectiveForParticle(parameters = parameters, flock = flock, particle = p))
-	self.global_best_particle = copy.deepcopy(p)
-	self.global_best_objective_value = computeObjectiveForParticle(parameters = parameters, flock = flock, particle = self.global_best_particle)
-
-	self.inertia_counter = 0
-
-	def evolveParticles(self, parameters, flock) :
-	for particle in self.particles :
-		particle.evolve(parameters = parameters, flock = flock, reference_particle = self.global_best_particle)
-		self.updateGlobalInformation(parameters = parameters, flock = flock, candidate_particle = particle)
-
+	
+	
 		def updateGlobalInformation(self, parameters, flock, candidate_particle) :
 		#update global best partical
 		candidate_objective_value = computeObjectiveForParticle(parameters = parameters, flock = flock, particle = candidate_particle)
@@ -61,12 +66,12 @@ self.inertia_counter = max(self.inertia_counter - 1, 0)
 		else:
 self.inertia_counter += 1
 
-# update inertia
+# update initial_inertia
 if self.inertia_counter < 2:
-self.inertia_counter = max(parameters.inertia_min, min(parameters.inertia_max, 2.0 * parameters.inertia))
+self.inertia_counter = max(parameters.inertia_min, min(parameters.inertia_max, 2.0 * parameters.initial_inertia))
 else:
 if self.inertia_counter > 5:
-parameters.inertia = max(parameters.inertia_min, min(parameters.inertia_max, 0.5 * parameters.inertia))
+parameters.initial_inertia = max(parameters.inertia_min, min(parameters.inertia_max, 0.5 * parameters.initial_inertia))
 */
 
 #endif // !ARES_SWARM_H
